@@ -41,7 +41,6 @@ import { PanelMenuModule } from 'primeng/panelmenu';
           <p-avatar
             label="JD"
             shape="circle"
-            styleClass="bg-primary-100 text-primary-700 font-semibold text-sm"
           ></p-avatar>
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-gray-900 truncate">Jean Dupont</p>
