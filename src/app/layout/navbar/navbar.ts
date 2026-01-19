@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-navbar',
-  imports: [ButtonModule],
+  imports: [],
   template: `
         <!-- Top Navbar -->
     <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
@@ -19,7 +18,6 @@ import { ButtonModule } from 'primeng/button';
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
         </div>
-        <!--ajouter un bouton d'ajout de nouvelle intervention et une icone plus-->
 
       </div>
 
