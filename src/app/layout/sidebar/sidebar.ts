@@ -66,7 +66,7 @@ export class Sidebar implements OnInit {
       {
         label: 'Tableau de bord',
         icon: 'pi pi-home',
-        routerLink: ['/dashboard'],
+        routerLink: ['/home/dashbord'],
         style: { border: 'none' },
 
       },
