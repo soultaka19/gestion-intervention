@@ -21,7 +21,7 @@ import { InputTextModule } from 'primeng/inputtext';
           <div class="hidden sm:flex gap-2">
             <button
               pButton
-              label="Ajouter"
+              label="Ajouter une intervention"
               icon="pi pi-plus"
               class="p-button-sm !bg-indigo-600 hover:!bg-indigo-700 !text-white !border-indigo-600 hover:!border-indigo-700 transition-all shadow-sm hover:shadow-md !rounded-xl"
             ></button>
