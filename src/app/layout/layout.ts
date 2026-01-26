@@ -1,5 +1,7 @@
-import { Component, HostListener, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, effect, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { fromEvent } from 'rxjs';
+import { debounceTime, map } from 'rxjs/operators';
 import { Navbar } from "./navbar/navbar";
 import { Sidebar } from "./sidebar/sidebar";
 
@@ -8,15 +10,15 @@ import { Sidebar } from "./sidebar/sidebar";
   imports: [Sidebar, Navbar, RouterOutlet],
   template: `
     <div class="flex h-screen bg-gray-50 overflow-hidden">
-      <!-- Overlay pour mobile -->
-      @if (!isCollapsed() && isMobile()) {
+      <!-- Overlay pour mobile seulement quand sidebar est ouverte -->
+      @if (!isCollapsed() && isMobileView()) {
         <div 
           class="fixed inset-0 bg-black/50 z-20 md:hidden animate-fade-in"
-          (click)="toggleSidebar()"
+          (click)="collapseSidebar()"
         ></div>
       }
 
-      <!-- Sidebar -->
+      <!-- Sidebar - toujours visible avec icônes -->
       <app-sidebar 
         [isCollapsed]="isCollapsed()"
         (toggleSidebar)="toggleSidebar()"
@@ -32,7 +34,6 @@ import { Sidebar } from "./sidebar/sidebar";
 
         <main 
           class="flex-1 overflow-y-auto p-4 md:p-6 transition-all duration-300"
-          [class.md:ml-0]="!isCollapsed()"
         >
           <div 
             class="container-app transition-all duration-300"
@@ -52,60 +53,40 @@ import { Sidebar } from "./sidebar/sidebar";
     }
   `,
 })
-export class Layout implements OnInit, OnDestroy {
-  isCollapsed = signal(this.getInitialCollapseState());
-  private resizeTimeout: any;
+export class Layout {
+  isCollapsed = signal(false); // Toujours collapsed par défaut (mode icônes)
+  private previousIsMobile = this.isMobileView();
 
-  ngOnInit() {
-    // Ajuster l'état initial au chargement
-    this.adjustSidebarOnResize();
-  }
+  constructor() {
+    // Écouter les changements de taille d'écran avec RxJS
+    fromEvent(window, 'resize')
+      .pipe(
+        debounceTime(150),
+        map(() => this.isMobileView())
+      )
+      .subscribe(isMobile => {
+        // Sur changement de breakpoint, retour en mode collapsed
+        if (isMobile !== this.previousIsMobile) {
+          this.isCollapsed.set(true);
+          this.previousIsMobile = isMobile;
+        }
+      });
 
-  ngOnDestroy() {
-    if (this.resizeTimeout) {
-      clearTimeout(this.resizeTimeout);
-    }
-  }
-
-  @HostListener('window:resize', ['$event'])
-  onResize(event: Event) {
-    // Debounce pour éviter trop d'appels
-    if (this.resizeTimeout) {
-      clearTimeout(this.resizeTimeout);
-    }
-    
-    this.resizeTimeout = setTimeout(() => {
-      this.adjustSidebarOnResize();
-    }, 150);
+    effect(() => {
+      const collapsed = this.isCollapsed();
+      // Logique additionnelle si nécessaire
+    });
   }
 
   toggleSidebar() {
     this.isCollapsed.update(value => !value);
   }
 
-  isMobile(): boolean {
-    return window.innerWidth < 768;
+  collapseSidebar() {
+    this.isCollapsed.set(true);
   }
 
-  private adjustSidebarOnResize() {
-    const wasMobile = this.isMobile();
-    
-    // Si on passe de mobile à desktop
-    if (!wasMobile && this.isCollapsed()) {
-      // Ouvrir automatiquement la sidebar sur desktop
-      this.isCollapsed.set(false);
-    }
-    
-    // Si on passe de desktop à mobile
-    if (wasMobile && !this.isCollapsed()) {
-      // Fermer automatiquement la sidebar sur mobile
-      this.isCollapsed.set(true);
-    }
-  }
-
-  private getInitialCollapseState(): boolean {
-    // Sur mobile, sidebar fermée par défaut
-    // Sur desktop, sidebar ouverte par défaut
-    return window.innerWidth < 768;
+  isMobileView(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth < 768;
   }
 }

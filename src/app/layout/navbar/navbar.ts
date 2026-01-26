@@ -12,17 +12,8 @@ import { ToolbarModule } from 'primeng/toolbar';
     <p-toolbar class="navbar-custom border-b border-gray-200 bg-white shadow-sm">
       <ng-template pTemplate="start">
         <div class="flex items-center gap-4">
-          <!-- Bouton toggle pour mobile -->
-          <!-- <button
-            pButton
-            type="button"
-            icon="pi pi-bars"
-            class="p-button-text p-button-rounded md:hidden !text-primary-600 hover:!text-primary-700 hover:!bg-primary-50 transition-colors"
-            (click)="toggleSidebar.emit()"
-          ></button> -->
-
           <!-- Breadcrumb ou titre de page -->
-          <div class="hidden sm:block">
+          <div class="block">
             <h2 class="text-lg font-semibold text-gray-900">Tableau de bord</h2>
           </div>
         </div>
