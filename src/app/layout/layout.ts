@@ -10,6 +10,14 @@ import { Sidebar } from "./sidebar/sidebar";
   imports: [Sidebar, Navbar, RouterOutlet],
   template: `
     <div class="flex h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 overflow-hidden">
+      <!-- Overlay pour fermer la sidebar au clic extérieur -->
+      @if (!isCollapsed() && isMobileView() ) {
+        <div 
+          class="fixed inset-0 bg-black/20 z-20 animate-fade-in"
+          (click)="collapseSidebar()"
+        ></div>
+      }
+
       <!-- Sidebar - toujours visible avec icônes -->
       <app-sidebar 
         [isCollapsed]="isCollapsed()"
@@ -42,7 +50,7 @@ import { Sidebar } from "./sidebar/sidebar";
   `,
 })
 export class Layout {
-  isCollapsed = signal(false);
+  isCollapsed = signal(true);
   private previousIsMobile = this.isMobileView();
 
   constructor() {
