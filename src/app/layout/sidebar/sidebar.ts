@@ -9,9 +9,9 @@ import { SidebarUser } from "./sidebar-user";
   imports: [SidebarHeader, SidebarMenu, SidebarUser],
   template: `
     <aside 
-      class="bg-white border-r border-gray-200 flex flex-col h-full transition-all duration-300 ease-in-out shadow-sm relative"
-      [class.w-64]="!isCollapsed()"
-      [class.w-18]="isCollapsed()"
+      class="bg-gradient-to-b from-indigo-900 via-indigo-800 to-indigo-900 flex flex-col h-full transition-all duration-300 ease-in-out shadow-2xl"
+      [class.w-72]="!isCollapsed()"
+      [class.w-20]="isCollapsed()"
     >
       <app-sidebar-header 
         [isCollapsed]="isCollapsed()"
@@ -44,7 +44,7 @@ export class Sidebar {
   menuItems: MenuItem[] = [
     {
       label: 'Tableau de bord',
-      icon: 'pi pi-home',
+      icon: 'pi pi-th-large',
       routerLink: ['/home/dashbord'],
     },
     {
