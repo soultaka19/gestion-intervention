@@ -10,8 +10,7 @@ import { SidebarUser } from "./sidebar-user";
   template: `
     <aside 
       class="bg-white border-r border-gray-200 flex flex-col h-full transition-all duration-300 ease-in-out shadow-sm"
-      [class.w-64]="!isCollapsed()"
-      [class.w-20]="isCollapsed()"
+      [class]="sidebarClasses()"
     >
       <app-sidebar-header 
         [isCollapsed]="isCollapsed()"
@@ -29,6 +28,12 @@ import { SidebarUser } from "./sidebar-user";
         class="mt-auto" 
       />
     </aside>
+  `,
+  styles: `
+    :host {
+      display: block;
+      height: 100%;
+    }
   `,
 })
 export class Sidebar {
@@ -75,4 +80,29 @@ export class Sidebar {
       routerLink: ['/rapports/performance'],
     },
   ];
+
+  sidebarClasses(): string {
+    const baseClasses = [];
+    
+    // Desktop : toggle entre w-64 et w-18
+    if (!this.isCollapsed()) {
+      baseClasses.push('w-64');
+    } else {
+      baseClasses.push('w-18');
+    }
+    
+    // Mobile : position absolue avec slide-in/out
+    baseClasses.push('md:relative');
+    baseClasses.push('fixed');
+    baseClasses.push('inset-y-0');
+    baseClasses.push('left-0');
+    
+    if (this.isCollapsed()) {
+      baseClasses.push('-translate-x-full md:translate-x-0');
+    } else {
+      baseClasses.push('translate-x-0');
+    }
+    
+    return baseClasses.join(' ');
+  }
 }

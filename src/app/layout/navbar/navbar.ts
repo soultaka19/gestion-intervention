@@ -1,4 +1,4 @@
-import { Component, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
@@ -9,68 +9,77 @@ import { ToolbarModule } from 'primeng/toolbar';
   selector: 'app-navbar',
   imports: [ToolbarModule, ButtonModule, BadgeModule, AvatarModule, InputTextModule],
   template: `
-    <p-toolbar class="navbar-custom border-none shadow-md">
+    <p-toolbar class="navbar-custom border-b border-gray-200 bg-white shadow-sm">
       <ng-template pTemplate="start">
+        <div class="flex items-center gap-4">
+          <!-- Bouton toggle pour mobile -->
+          <!-- <button
+            pButton
+            type="button"
+            icon="pi pi-bars"
+            class="p-button-text p-button-rounded md:hidden !text-primary-600 hover:!text-primary-700 hover:!bg-primary-50 transition-colors"
+            (click)="toggleSidebar.emit()"
+          ></button> -->
+
+          <!-- Breadcrumb ou titre de page -->
+          <div class="hidden sm:block">
+            <h2 class="text-lg font-semibold text-gray-900">Tableau de bord</h2>
+          </div>
+        </div>
       </ng-template>
 
       <ng-template pTemplate="end">
-          <i class="pi pi-bell pi-bell mr-4" style="font-size: 1.2rem;color:white"></i>
-          <i class="pi pi-spin pi-cog" style="font-size: 1.5rem;color:white"></i>
+        <div class="flex items-center gap-2 md:gap-4">
+          <!-- Boutons d'action - cachés sur petit mobile -->
+          <div class="hidden sm:flex gap-2">
+            <button
+              pButton
+              label="Ajouter"
+              icon="pi pi-plus"
+              class="p-button-sm !bg-primary-600 hover:!bg-primary-700 !text-white !border-primary-600 hover:!border-primary-700 transition-all shadow-sm hover:shadow-md"
+            ></button>
+            <button
+              pButton
+              label="Planning"
+              icon="pi pi-calendar"
+              class="p-button-sm p-button-outlined !text-primary-600 !border-primary-600 hover:!bg-primary-50 hover:!text-primary-700 hover:!border-primary-700 transition-all"
+            ></button>
+          </div>
+
+          <!-- Notifications -->
+          <button
+            pButton
+            type="button"
+            icon="pi pi-bell"
+            class="p-button-text p-button-rounded !text-primary-600 hover:!text-primary-700 hover:!bg-primary-50 transition-colors relative"
+            pBadge="3"
+            severity="danger"
+          ></button>
+
+          <!-- Avatar utilisateur - caché sur très petit écran -->
+          <div class="hidden md:block">
+            <p-avatar
+              label="JD"
+              shape="circle"
+              styleClass="bg-gradient-to-br from-primary-600 to-primary-700 text-white cursor-pointer hover:ring-2 hover:ring-primary-300 transition-all"
+            ></p-avatar>
+          </div>
+        </div>
       </ng-template>
     </p-toolbar>
   `,
   styles: `
-    ::ng-deep .navbar-custom {
-      background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-700) 100%) !important;
-      border: none !important;
-      padding: 0.75rem 1.5rem !important;
+    .navbar-custom {
+      padding: 0.75rem 1rem !important;
       height: 4rem;
-    }
-    
-    ::ng-deep .navbar-custom .p-toolbar-group-start,
-    ::ng-deep .navbar-custom .p-toolbar-group-end {
-      display: flex;
-      align-items: center;
-    }
-
-    ::ng-deep .navbar-custom .p-inputtext {
-      background: rgba(255, 255, 255, 0.1) !important;
-      border-color: rgba(255, 255, 255, 0.2) !important;
-      color: white !important;
-    }
-
-    ::ng-deep .navbar-custom .p-inputtext::placeholder {
-      color: rgba(255, 255, 255, 0.6) !important;
-    }
-
-    ::ng-deep .navbar-custom .p-inputtext:focus {
-      background: rgba(255, 255, 255, 0.2) !important;
-      border-color: rgba(255, 255, 255, 0.4) !important;
-      box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1) !important;
-    }
-
-    ::ng-deep .navbar-custom .p-button {
-      color: rgba(255, 255, 255, 0.9) !important;
-    }
-
-    ::ng-deep .navbar-custom .p-button:hover {
-      background: rgba(255, 255, 255, 0.1) !important;
-      color: white !important;
-    }
-
-    ::ng-deep .navbar-custom .p-badge {
-      background: var(--color-red-500) !important;
-      color: white !important;
-      min-width: 1.25rem;
-      height: 1.25rem;
-      line-height: 1.25rem;
-    }
-
-    ::ng-deep .navbar-custom .p-input-icon-left > i {
-      color: rgba(255, 255, 255, 0.6) !important;
+      
+      @media (min-width: 768px) {
+        padding: 0.75rem 1.5rem !important;
+      }
     }
   `,
 })
 export class Navbar {
+  isCollapsed = input(false);
   toggleSidebar = output();
 }
