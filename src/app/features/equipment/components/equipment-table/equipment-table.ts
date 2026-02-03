@@ -1,7 +1,7 @@
-import { Component, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { TableModule } from 'primeng/table';
+import { Component, input, output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { Equipment, EQUIPMENT_TYPE_LABELS } from '../../models/equipment';
@@ -54,7 +54,7 @@ import { Equipment, EQUIPMENT_TYPE_LABELS } from '../../models/equipment';
         <tr>
           <td>
             <p-tag
-              [value]="getTypeLabel(equipment.type)"
+              [value]="equipment.type"
               [severity]="getTypeSeverity(equipment.type)"
             />
           </td>
