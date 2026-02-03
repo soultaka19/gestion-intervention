@@ -5,7 +5,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
-import { Equipment, CreateEquipment, EquipmentType, EquipmentTypeOption } from '../../models/equipment';
+import { Equipment, CreateEquipment, EquipmentType } from '../../models/equipment';
 import { Client } from '../../../client/models/client';
 
 @Component({
@@ -50,7 +50,7 @@ import { Client } from '../../../client/models/client';
         <p-select
           id="type"
           formControlName="type"
-          [options]="equipmentTypes()"
+          [options]="equipmentTypes"
           optionLabel="label"
           optionValue="value"
           placeholder="Sélectionnez un type"
@@ -185,14 +185,14 @@ export class EquipmentForm implements OnInit {
   save = output<CreateEquipment>();
   cancel = output<void>();
 
-  equipmentTypes: () => { label: string; value: EquipmentType }[] = () => [
-    { label: 'Chaudière', value: 'Chaudiere' },
-    { label: 'Radiateur', value: 'Radiateur' },
-    { label: 'Climatisation', value: 'Climatisation' },
-    { label: 'Pompe à chaleur', value: 'PompeAChaleur' },
-    { label: 'Chauffe-eau', value: 'ChauffeEau' },
-    { label: 'Ventilation', value: 'Ventilation' },
-    { label: 'Autre', value: 'Autre' },
+  equipmentTypes = [
+    { label: 'Chaudière', value: EquipmentType.Chaudiere },
+    { label: 'Radiateur', value: EquipmentType.Radiateur },
+    { label: 'Climatisation', value: EquipmentType.Climatisation },
+    { label: 'Pompe à chaleur', value: EquipmentType.PompeAChaleur },
+    { label: 'Chauffe-eau', value: EquipmentType.ChauffeEau },
+    { label: 'Ventilation', value: EquipmentType.Ventilation },
+    { label: 'Autre', value: EquipmentType.Autre },
   ];
 
   form: FormGroup = this.fb.group({

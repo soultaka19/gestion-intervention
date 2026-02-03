@@ -128,19 +128,19 @@ export class EquipmentList implements OnInit {
   private messageService = inject(MessageService);
 
   searchQuery = signal('');
-  selectedType: EquipmentType | null = null;
+  selectedType: number | null = null;
   showDialog = false;
   editingEquipment = signal<Equipment | null>(null);
   saving = signal(false);
 
   typeOptions = [
-    { label: 'Chaudière', value: 'Chaudiere' },
-    { label: 'Radiateur', value: 'Radiateur' },
-    { label: 'Climatisation', value: 'Climatisation' },
-    { label: 'Pompe à chaleur', value: 'PompeAChaleur' },
-    { label: 'Chauffe-eau', value: 'ChauffeEau' },
-    { label: 'Ventilation', value: 'Ventilation' },
-    { label: 'Autre', value: 'Autre' },
+    { label: 'Chaudière', value: EquipmentType.Chaudiere },
+    { label: 'Radiateur', value: EquipmentType.Radiateur },
+    { label: 'Climatisation', value: EquipmentType.Climatisation },
+    { label: 'Pompe à chaleur', value: EquipmentType.PompeAChaleur },
+    { label: 'Chauffe-eau', value: EquipmentType.ChauffeEau },
+    { label: 'Ventilation', value: EquipmentType.Ventilation },
+    { label: 'Autre', value: EquipmentType.Autre },
   ];
 
   private searchTimeout: ReturnType<typeof setTimeout> | null = null;

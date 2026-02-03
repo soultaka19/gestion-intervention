@@ -1,16 +1,27 @@
-export type EquipmentType =
-  | 'Chaudiere'
-  | 'Radiateur'
-  | 'Climatisation'
-  | 'PompeAChaleur'
-  | 'ChauffeEau'
-  | 'Ventilation'
-  | 'Autre';
+export enum EquipmentType {
+  Chaudiere = 0,
+  Radiateur = 1,
+  Climatisation = 2,
+  PompeAChaleur = 3,
+  ChauffeEau = 4,
+  Ventilation = 5,
+  Autre = 99,
+}
 
 export interface EquipmentTypeOption {
-  value: number;
-  name: EquipmentType;
+  value: EquipmentType;
+  name: string;
 }
+
+export const EQUIPMENT_TYPE_LABELS: Record<EquipmentType, string> = {
+  [EquipmentType.Chaudiere]: 'Chaudière',
+  [EquipmentType.Radiateur]: 'Radiateur',
+  [EquipmentType.Climatisation]: 'Climatisation',
+  [EquipmentType.PompeAChaleur]: 'Pompe à chaleur',
+  [EquipmentType.ChauffeEau]: 'Chauffe-eau',
+  [EquipmentType.Ventilation]: 'Ventilation',
+  [EquipmentType.Autre]: 'Autre',
+};
 
 export interface Equipment {
   id: string;

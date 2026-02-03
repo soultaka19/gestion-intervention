@@ -4,7 +4,7 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
-import { Equipment, EquipmentType } from '../../models/equipment';
+import { Equipment, EquipmentType, EQUIPMENT_TYPE_LABELS } from '../../models/equipment';
 
 @Component({
   selector: 'app-equipment-table',
@@ -144,27 +144,18 @@ export class EquipmentTable {
   maintenance = output<Equipment>();
 
   getTypeLabel(type: EquipmentType): string {
-    const labels: Record<EquipmentType, string> = {
-      Chaudiere: 'Chaudière',
-      Radiateur: 'Radiateur',
-      Climatisation: 'Climatisation',
-      PompeAChaleur: 'Pompe à chaleur',
-      ChauffeEau: 'Chauffe-eau',
-      Ventilation: 'Ventilation',
-      Autre: 'Autre',
-    };
-    return labels[type] || type;
+    return EQUIPMENT_TYPE_LABELS[type] || 'Inconnu';
   }
 
   getTypeSeverity(type: EquipmentType): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     const severities: Record<EquipmentType, 'success' | 'info' | 'warn' | 'danger' | 'secondary'> = {
-      Chaudiere: 'danger',
-      Radiateur: 'warn',
-      Climatisation: 'info',
-      PompeAChaleur: 'success',
-      ChauffeEau: 'warn',
-      Ventilation: 'secondary',
-      Autre: 'secondary',
+      [EquipmentType.Chaudiere]: 'danger',
+      [EquipmentType.Radiateur]: 'warn',
+      [EquipmentType.Climatisation]: 'info',
+      [EquipmentType.PompeAChaleur]: 'success',
+      [EquipmentType.ChauffeEau]: 'warn',
+      [EquipmentType.Ventilation]: 'secondary',
+      [EquipmentType.Autre]: 'secondary',
     };
     return severities[type] || 'secondary';
   }
