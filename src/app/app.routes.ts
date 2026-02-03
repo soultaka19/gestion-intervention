@@ -42,6 +42,13 @@ export const routes: Routes = [
             m => m.ClientDetail
           )
       },
+      {
+        path: 'equipements',
+        loadComponent: () =>
+          import('./features/equipment/components/equipment-list/equipment-list').then(
+            m => m.EquipmentList
+          )
+      },
       { path: '', redirectTo: 'dashbord', pathMatch: 'full' }
     ]
   },

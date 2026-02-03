@@ -11,6 +11,10 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { ClientData } from '../../services/client-data';
 import { Client, CreateClient } from '../../models/client';
 import { ClientForm } from '../client-form/client-form';
+import { EquipmentData } from '../../../equipment/services/equipment-data';
+import { Equipment, CreateEquipment } from '../../../equipment/models/equipment';
+import { EquipmentTable } from '../../../equipment/components/equipment-table/equipment-table';
+import { EquipmentForm } from '../../../equipment/components/equipment-form/equipment-form';
 
 @Component({
   selector: 'app-client-detail',
@@ -24,6 +28,8 @@ import { ClientForm } from '../client-form/client-form';
     ToastModule,
     SkeletonModule,
     ClientForm,
+    EquipmentTable,
+    EquipmentForm,
   ],
   providers: [ConfirmationService, MessageService],
   template: `
@@ -70,7 +76,7 @@ import { ClientForm } from '../client-form/client-form';
                   icon="pi pi-trash"
                   severity="danger"
                   [rounded]="true"
-                  (onClick)="onDelete()"
+                  (onClick)="onDeleteClient()"
                 />
               </div>
             </div>
@@ -133,7 +139,7 @@ import { ClientForm } from '../client-form/client-form';
                 <div class="space-y-2">
                   <div class="flex items-center gap-2">
                     <i class="pi pi-box text-gray-400"></i>
-                    <span class="text-gray-700">{{ c.equipmentCount }} équipement(s)</span>
+                    <span class="text-gray-700">{{ equipmentData.equipmentCount() }} équipement(s)</span>
                   </div>
                   <div class="flex items-center gap-2">
                     <i class="pi pi-calendar text-gray-400"></i>
@@ -157,22 +163,26 @@ import { ClientForm } from '../client-form/client-form';
           </div>
         </div>
 
-        <!-- Equipments section (placeholder for iteration 3) -->
-        <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div class="flex items-center justify-between mb-4">
+        <!-- Equipments section -->
+        <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200">
+          <div class="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 class="text-lg font-semibold text-gray-900">Équipements</h2>
             <p-button
               label="Ajouter un équipement"
               icon="pi pi-plus"
               [outlined]="true"
               size="small"
-              [disabled]="true"
+              (onClick)="openEquipmentDialog()"
             />
           </div>
-          <div class="text-center py-8 text-gray-500">
-            <i class="pi pi-box text-4xl mb-2 block text-gray-300"></i>
-            <p>Les équipements seront disponibles dans la prochaine itération</p>
-          </div>
+          <app-equipment-table
+            [equipments]="equipmentData.equipments()"
+            [loading]="equipmentData.loading()"
+            [showClient]="false"
+            (edit)="openEquipmentEditDialog($event)"
+            (delete)="onDeleteEquipment($event)"
+            (maintenance)="onMaintenanceEquipment($event)"
+          />
         </div>
       } @else {
         <!-- Not found -->
@@ -185,7 +195,7 @@ import { ClientForm } from '../client-form/client-form';
       }
     </div>
 
-    <!-- Edit Dialog -->
+    <!-- Edit Client Dialog -->
     <p-dialog
       header="Modifier le client"
       [(visible)]="showEditDialog"
@@ -197,14 +207,33 @@ import { ClientForm } from '../client-form/client-form';
       <app-client-form
         [client]="client()"
         [loading]="saving()"
-        (save)="onSave($event)"
+        (save)="onSaveClient($event)"
         (cancel)="closeEditDialog()"
+      />
+    </p-dialog>
+
+    <!-- Equipment Dialog -->
+    <p-dialog
+      [header]="editingEquipment() ? 'Modifier l\\'équipement' : 'Nouvel équipement'"
+      [(visible)]="showEquipmentDialog"
+      [modal]="true"
+      [style]="{ width: '550px' }"
+      [draggable]="false"
+      [resizable]="false"
+    >
+      <app-equipment-form
+        [equipment]="editingEquipment()"
+        [preselectedClientId]="client()?.id ?? null"
+        [loading]="savingEquipment()"
+        (save)="onSaveEquipment($event)"
+        (cancel)="closeEquipmentDialog()"
       />
     </p-dialog>
   `,
 })
 export class ClientDetail implements OnInit {
   clientData = inject(ClientData);
+  equipmentData = inject(EquipmentData);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private confirmationService = inject(ConfirmationService);
@@ -214,10 +243,15 @@ export class ClientDetail implements OnInit {
   showEditDialog = false;
   saving = signal(false);
 
+  showEquipmentDialog = false;
+  editingEquipment = signal<Equipment | null>(null);
+  savingEquipment = signal(false);
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.clientData.getById(id).subscribe({
+        next: () => this.loadEquipments(id),
         error: err => {
           this.messageService.add({
             severity: 'error',
@@ -229,11 +263,24 @@ export class ClientDetail implements OnInit {
     }
   }
 
+  loadEquipments(clientId: string): void {
+    this.equipmentData.getByClientId(clientId).subscribe({
+      error: err => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: err.message || 'Impossible de charger les équipements',
+        });
+      },
+    });
+  }
+
   goBack(): void {
     this.clientData.clearSelection();
     this.router.navigate(['/home/clients']);
   }
 
+  // Client methods
   openEditDialog(): void {
     this.showEditDialog = true;
   }
@@ -242,7 +289,7 @@ export class ClientDetail implements OnInit {
     this.showEditDialog = false;
   }
 
-  onSave(data: CreateClient): void {
+  onSaveClient(data: CreateClient): void {
     const client = this.client();
     if (!client) return;
 
@@ -268,7 +315,7 @@ export class ClientDetail implements OnInit {
     });
   }
 
-  onDelete(): void {
+  onDeleteClient(): void {
     const client = this.client();
     if (!client) return;
 
@@ -294,6 +341,135 @@ export class ClientDetail implements OnInit {
               severity: 'error',
               summary: 'Erreur',
               detail: err.message || 'Impossible de supprimer le client',
+            });
+          },
+        });
+      },
+    });
+  }
+
+  // Equipment methods
+  openEquipmentDialog(): void {
+    this.editingEquipment.set(null);
+    this.showEquipmentDialog = true;
+  }
+
+  openEquipmentEditDialog(equipment: Equipment): void {
+    this.editingEquipment.set(equipment);
+    this.showEquipmentDialog = true;
+  }
+
+  closeEquipmentDialog(): void {
+    this.showEquipmentDialog = false;
+    this.editingEquipment.set(null);
+  }
+
+  onSaveEquipment(data: CreateEquipment): void {
+    this.savingEquipment.set(true);
+    const equipment = this.editingEquipment();
+    const clientId = this.client()?.id;
+
+    if (equipment) {
+      this.equipmentData.update(equipment.id, data).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Équipement modifié avec succès',
+          });
+          this.closeEquipmentDialog();
+          this.savingEquipment.set(false);
+          if (clientId) this.loadEquipments(clientId);
+        },
+        error: err => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: err.message || 'Impossible de modifier l\'équipement',
+          });
+          this.savingEquipment.set(false);
+        },
+      });
+    } else {
+      this.equipmentData.create(data).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Équipement créé avec succès',
+          });
+          this.closeEquipmentDialog();
+          this.savingEquipment.set(false);
+          if (clientId) this.loadEquipments(clientId);
+        },
+        error: err => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: err.message || 'Impossible de créer l\'équipement',
+          });
+          this.savingEquipment.set(false);
+        },
+      });
+    }
+  }
+
+  onDeleteEquipment(equipment: Equipment): void {
+    const clientId = this.client()?.id;
+
+    this.confirmationService.confirm({
+      message: `Êtes-vous sûr de vouloir supprimer l'équipement "${equipment.brand} ${equipment.model}" ?`,
+      header: 'Confirmation de suppression',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Supprimer',
+      rejectLabel: 'Annuler',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.equipmentData.delete(equipment.id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Succès',
+              detail: 'Équipement supprimé avec succès',
+            });
+            if (clientId) this.loadEquipments(clientId);
+          },
+          error: err => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erreur',
+              detail: err.message || 'Impossible de supprimer l\'équipement',
+            });
+          },
+        });
+      },
+    });
+  }
+
+  onMaintenanceEquipment(equipment: Equipment): void {
+    const clientId = this.client()?.id;
+
+    this.confirmationService.confirm({
+      message: `Marquer l'équipement "${equipment.brand} ${equipment.model}" comme maintenancé ?`,
+      header: 'Confirmer la maintenance',
+      icon: 'pi pi-wrench',
+      acceptLabel: 'Confirmer',
+      rejectLabel: 'Annuler',
+      accept: () => {
+        this.equipmentData.markAsMaintained(equipment.id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Succès',
+              detail: 'Maintenance enregistrée avec succès',
+            });
+            if (clientId) this.loadEquipments(clientId);
+          },
+          error: err => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erreur',
+              detail: err.message || 'Impossible d\'enregistrer la maintenance',
             });
           },
         });
