@@ -1,14 +1,40 @@
 import { Routes } from '@angular/router';
-import { Dashbord } from './dashbord/dashbord';
 import { Layout } from './layout/layout';
+import { authGuard, guestGuard } from './core/auth/guards/auth.guard';
 
 export const routes: Routes = [
+  // Auth routes (public)
   {
-    path:'home', 
-    component : Layout,
-    children:[
-      {path:'dashbord',component:Dashbord}
+    path: 'auth',
+    canActivate: [guestGuard],
+    children: [
+      {
+        path: 'login',
+        loadComponent: () => import('./features/auth/login/login').then(m => m.Login)
+      },
+      {
+        path: 'register',
+        loadComponent: () => import('./features/auth/register/register').then(m => m.Register)
+      },
+      { path: '', redirectTo: 'login', pathMatch: 'full' }
     ]
   },
-  {path : '', redirectTo: 'home/dashbord',pathMatch: 'full' }
+
+  // Protected routes
+  {
+    path: 'home',
+    component: Layout,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'dashbord',
+        loadComponent: () => import('./dashbord/dashbord').then(m => m.Dashbord)
+      },
+      { path: '', redirectTo: 'dashbord', pathMatch: 'full' }
+    ]
+  },
+
+  // Default redirect
+  { path: '', redirectTo: 'home/dashbord', pathMatch: 'full' },
+  { path: '**', redirectTo: 'home/dashbord' }
 ];
