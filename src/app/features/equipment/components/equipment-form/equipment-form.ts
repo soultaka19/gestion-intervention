@@ -1,12 +1,12 @@
-import { Component, input, output, effect, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, input, OnInit, output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { TextareaModule } from 'primeng/textarea';
-import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
-import { Equipment, CreateEquipment, EquipmentType } from '../../models/equipment';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TextareaModule } from 'primeng/textarea';
 import { Client } from '../../../client/models/client';
+import { CreateEquipment, Equipment, EQUIPMENT_TYPES } from '../../models/equipment';
 
 @Component({
   selector: 'app-equipment-form',
@@ -185,15 +185,7 @@ export class EquipmentForm implements OnInit {
   save = output<CreateEquipment>();
   cancel = output<void>();
 
-  equipmentTypes = [
-    { label: 'Chaudière', value: EquipmentType.Chaudiere },
-    { label: 'Radiateur', value: EquipmentType.Radiateur },
-    { label: 'Climatisation', value: EquipmentType.Climatisation },
-    { label: 'Pompe à chaleur', value: EquipmentType.PompeAChaleur },
-    { label: 'Chauffe-eau', value: EquipmentType.ChauffeEau },
-    { label: 'Ventilation', value: EquipmentType.Ventilation },
-    { label: 'Autre', value: EquipmentType.Autre },
-  ];
+  equipmentTypes = EQUIPMENT_TYPES;
 
   form: FormGroup = this.fb.group({
     clientId: ['', Validators.required],
@@ -255,6 +247,8 @@ export class EquipmentForm implements OnInit {
         : null,
       notes: formValue.notes || null,
     };
+
+    console.log("data", data);
 
     this.save.emit(data);
   }

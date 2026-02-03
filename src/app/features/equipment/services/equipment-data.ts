@@ -6,11 +6,12 @@ import {
   CreateEquipment,
   UpdateEquipment,
   EquipmentTypeOption,
+  EquipmentTypeName,
 } from '../models/equipment';
 
 export interface EquipmentFilters {
   clientId?: string;
-  type?: number;
+  type?: EquipmentTypeName;
   search?: string;
 }
 
@@ -37,7 +38,7 @@ export class EquipmentData {
 
     const params = new URLSearchParams();
     if (filters?.clientId) params.append('clientId', filters.clientId);
-    if (filters?.type !== undefined) params.append('type', filters.type.toString());
+    if (filters?.type) params.append('type', filters.type);
     if (filters?.search) params.append('search', filters.search);
 
     const queryString = params.toString();

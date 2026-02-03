@@ -1,17 +1,17 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
-import { DialogModule } from 'primeng/dialog';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { EquipmentData, EquipmentFilters } from '../../services/equipment-data';
 import { ClientData } from '../../../client/services/client-data';
-import { Equipment, CreateEquipment, EquipmentType } from '../../models/equipment';
-import { EquipmentTable } from '../equipment-table/equipment-table';
+import { CreateEquipment, Equipment, EquipmentTypeName, EQUIPMENT_TYPES } from '../../models/equipment';
+import { EquipmentData, EquipmentFilters } from '../../services/equipment-data';
 import { EquipmentForm } from '../equipment-form/equipment-form';
+import { EquipmentTable } from '../equipment-table/equipment-table';
 
 @Component({
   selector: 'app-equipment-list',
@@ -104,7 +104,7 @@ import { EquipmentForm } from '../equipment-form/equipment-form';
 
     <!-- Create/Edit Dialog -->
     <p-dialog
-      [header]="editingEquipment() ? 'Modifier l\\'équipement' : 'Nouvel équipement'"
+      [header]="editingEquipment() ? 'Modifier equipement' : 'Nouvel equipement'"
       [(visible)]="showDialog"
       [modal]="true"
       [style]="{ width: '550px' }"
@@ -128,20 +128,12 @@ export class EquipmentList implements OnInit {
   private messageService = inject(MessageService);
 
   searchQuery = signal('');
-  selectedType: number | null = null;
+  selectedType: EquipmentTypeName | null = null;
   showDialog = false;
   editingEquipment = signal<Equipment | null>(null);
   saving = signal(false);
 
-  typeOptions = [
-    { label: 'Chaudière', value: EquipmentType.Chaudiere },
-    { label: 'Radiateur', value: EquipmentType.Radiateur },
-    { label: 'Climatisation', value: EquipmentType.Climatisation },
-    { label: 'Pompe à chaleur', value: EquipmentType.PompeAChaleur },
-    { label: 'Chauffe-eau', value: EquipmentType.ChauffeEau },
-    { label: 'Ventilation', value: EquipmentType.Ventilation },
-    { label: 'Autre', value: EquipmentType.Autre },
-  ];
+  typeOptions = EQUIPMENT_TYPES;
 
   private searchTimeout: ReturnType<typeof setTimeout> | null = null;
 

@@ -138,6 +138,13 @@ Crée une nouvelle organisation avec un utilisateur administrateur.
   "firstName": "Marie",
   "lastName": "Martin"
 }
+{
+  "organizationName": "Services Électriques de l'Outaouais",
+  "email": "m.lavigne@elecoutaouais.ca",
+  "password": "SecurePassword456!",
+  "firstName": "Mathieu",
+  "lastName": "Lavigne"
+}
 ```
 
 **Réponse (201 Created) :**
