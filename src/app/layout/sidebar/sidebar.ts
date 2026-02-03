@@ -48,24 +48,29 @@ export class Sidebar {
       routerLink: ['/home/dashbord'],
     },
     {
+      label: 'Clients',
+      icon: 'pi pi-building',
+      routerLink: ['/home/clients'],
+    },
+    {
       label: 'Interventions',
       icon: 'pi pi-briefcase',
-      routerLink: ['/interventions'],
+      routerLink: ['/home/interventions'],
     },
     {
       label: 'Techniciens',
       icon: 'pi pi-users',
-      routerLink: ['/techniciens'],
+      routerLink: ['/home/techniciens'],
     },
     {
       label: 'Planning',
       icon: 'pi pi-calendar',
-      routerLink: ['/planning'],
+      routerLink: ['/home/planning'],
     },
     {
       label: 'Équipements',
       icon: 'pi pi-cog',
-      routerLink: ['/equipements'],
+      routerLink: ['/home/equipements'],
     },
   ];
 
