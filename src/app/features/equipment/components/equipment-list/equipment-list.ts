@@ -8,7 +8,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { ClientData } from '../../../client/services/client-data';
-import { CreateEquipment, Equipment, EquipmentTypeName, EQUIPMENT_TYPES } from '../../models/equipment';
+import { CreateEquipment, Equipment, EQUIPMENT_TYPES } from '../../models/equipment';
 import { EquipmentData, EquipmentFilters } from '../../services/equipment-data';
 import { EquipmentForm } from '../equipment-form/equipment-form';
 import { EquipmentTable } from '../equipment-table/equipment-table';
@@ -128,7 +128,7 @@ export class EquipmentList implements OnInit {
   private messageService = inject(MessageService);
 
   searchQuery = signal('');
-  selectedType: EquipmentTypeName | null = null;
+  selectedType: number | null = null;
   showDialog = false;
   editingEquipment = signal<Equipment | null>(null);
   saving = signal(false);

@@ -1,42 +1,33 @@
-export type EquipmentTypeName =
-  | 'Chaudiere'
-  | 'Radiateur'
-  | 'Climatisation'
-  | 'PompeAChaleur'
-  | 'ChauffeEau'
-  | 'Ventilation'
-  | 'Autre';
-
 export interface EquipmentTypeOption {
-  value: EquipmentTypeName;
+  value: number;
   label: string;
 }
 
 export const EQUIPMENT_TYPES: EquipmentTypeOption[] = [
-  { value: 'Chaudiere', label: 'Chaudière' },
-  { value: 'Radiateur', label: 'Radiateur' },
-  { value: 'Climatisation', label: 'Climatisation' },
-  { value: 'PompeAChaleur', label: 'Pompe à chaleur' },
-  { value: 'ChauffeEau', label: 'Chauffe-eau' },
-  { value: 'Ventilation', label: 'Ventilation' },
-  { value: 'Autre', label: 'Autre' },
+  { value: 0, label: 'Chaudière' },
+  { value: 1, label: 'Radiateur' },
+  { value: 2, label: 'Climatisation' },
+  { value: 3, label: 'Pompe à chaleur' },
+  { value: 4, label: 'Chauffe-eau' },
+  { value: 5, label: 'Ventilation' },
+  { value: 99, label: 'Autre' },
 ];
 
-export const EQUIPMENT_TYPE_LABELS: Record<EquipmentTypeName, string> = {
-  Chaudiere: 'Chaudière',
-  Radiateur: 'Radiateur',
-  Climatisation: 'Climatisation',
-  PompeAChaleur: 'Pompe à chaleur',
-  ChauffeEau: 'Chauffe-eau',
-  Ventilation: 'Ventilation',
-  Autre: 'Autre',
+export const EQUIPMENT_TYPE_LABELS: Record<number, string> = {
+  0: 'Chaudière',
+  1: 'Radiateur',
+  2: 'Climatisation',
+  3: 'Pompe à chaleur',
+  4: 'Chauffe-eau',
+  5: 'Ventilation',
+  99: 'Autre',
 };
 
 export interface Equipment {
   id: string;
   clientId: string;
   clientName: string;
-  type: EquipmentTypeName;
+  type: number;
   brand: string;
   model: string;
   serialNumber: string;
@@ -49,7 +40,7 @@ export interface Equipment {
 
 export interface CreateEquipment {
   clientId: string;
-  type: EquipmentTypeName;
+  type: number;
   brand: string;
   model: string;
   serialNumber: string;
@@ -59,7 +50,7 @@ export interface CreateEquipment {
 }
 
 export interface UpdateEquipment {
-  type: EquipmentTypeName;
+  type: number;
   brand: string;
   model: string;
   serialNumber: string;
