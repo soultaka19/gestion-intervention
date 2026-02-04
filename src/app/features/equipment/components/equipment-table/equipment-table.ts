@@ -54,7 +54,7 @@ import { Equipment, EQUIPMENT_TYPE_LABELS } from '../../models/equipment';
         <tr>
           <td>
             <p-tag
-              [value]="equipment.type"
+              [value]="getTypeLabel(equipment.type)"
               [severity]="getTypeSeverity(equipment.type)"
             />
           </td>
