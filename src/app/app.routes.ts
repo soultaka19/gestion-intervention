@@ -49,6 +49,41 @@ export const routes: Routes = [
             m => m.EquipmentList
           )
       },
+      {
+        path: 'interventions',
+        loadComponent: () =>
+          import('./features/intervention/components/intervention-list/intervention-list').then(
+            m => m.InterventionList
+          )
+      },
+      {
+        path: 'interventions/:id',
+        loadComponent: () =>
+          import('./features/intervention/components/intervention-detail/intervention-detail').then(
+            m => m.InterventionDetail
+          )
+      },
+      {
+        path: 'planning',
+        loadComponent: () =>
+          import('./features/planning/components/planning-calendar/planning-calendar').then(
+            m => m.PlanningCalendar
+          )
+      },
+      {
+        path: 'carte',
+        loadComponent: () =>
+          import('./features/geolocation/components/intervention-map/intervention-map').then(
+            m => m.InterventionMap
+          )
+      },
+      {
+        path: 'techniciens',
+        loadComponent: () =>
+          import('./features/technician/components/technician-list/technician-list').then(
+            m => m.TechnicianList
+          )
+      },
       { path: '', redirectTo: 'dashbord', pathMatch: 'full' }
     ]
   },

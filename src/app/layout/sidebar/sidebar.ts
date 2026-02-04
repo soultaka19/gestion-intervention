@@ -68,6 +68,11 @@ export class Sidebar {
       routerLink: ['/home/planning'],
     },
     {
+      label: 'Carte',
+      icon: 'pi pi-map-marker',
+      routerLink: ['/home/carte'],
+    },
+    {
       label: 'Équipements',
       icon: 'pi pi-cog',
       routerLink: ['/home/equipements'],
