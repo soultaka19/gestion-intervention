@@ -167,14 +167,14 @@ type ViewMode = 'week' | 'month';
                           [style.background-color]="event.color + '20'"
                           [style.border-left]="'3px solid ' + event.color"
                           (click)="openEventDetail(event)"
-                          [pTooltip]="event.intervention.clientName"
+                          [pTooltip]="event.intervention.description"
                           tooltipPosition="top"
                         >
                           <div class="font-medium truncate" [style.color]="event.color">
-                            {{ event.title }}
+                            {{ event.intervention.clientName }}
                           </div>
                           <div class="text-gray-500 truncate">
-                            {{ event.intervention.clientName }}
+                            {{ event.intervention.timeRange }} · {{ getStatusLabel(event.intervention.status) }}
                           </div>
                         </div>
                       }
@@ -221,8 +221,10 @@ type ViewMode = 'week' | 'month';
                           [style.background-color]="event.color + '20'"
                           [style.color]="event.color"
                           (click)="openEventDetail(event)"
+                          [pTooltip]="event.intervention.timeRange + ' · ' + getStatusLabel(event.intervention.status)"
+                          tooltipPosition="top"
                         >
-                          {{ event.title }}
+                          {{ event.intervention.clientName }}
                         </div>
                       }
                       @if (day.events.length > 3) {
@@ -476,8 +478,8 @@ export class PlanningCalendar implements OnInit {
     this.interventionData
       .getPlanning(startDate, endDate, this.selectedTechnician || undefined)
       .subscribe({
-        next: response => {
-          this.interventions.set(response.interventions);
+        next: interventions => {
+          this.interventions.set(interventions);
           this.loading.set(false);
         },
         error: err => {
@@ -505,7 +507,7 @@ export class PlanningCalendar implements OnInit {
   private getEventsForDay(date: Date): CalendarEvent[] {
     const dateStr = this.formatDate(date);
     return this.interventions()
-      .filter(i => i.scheduledDate === dateStr)
+      .filter(i => i.scheduledDate?.split('T')[0] === dateStr)
       .map(i => this.interventionToEvent(i));
   }
 
@@ -531,9 +533,11 @@ export class PlanningCalendar implements OnInit {
       end.setHours(start.getHours() + 1);
     }
 
+    const timeRange = this.formatEventTimeRange(start, end);
+
     return {
       id: intervention.id,
-      title: INTERVENTION_TYPE_LABELS[intervention.type],
+      title: intervention.clientName,
       start,
       end,
       color: this.getStatusColor(intervention.status),
@@ -545,8 +549,15 @@ export class PlanningCalendar implements OnInit {
         type: intervention.type,
         status: intervention.status,
         description: intervention.description,
+        timeRange,
       },
     };
+  }
+
+  private formatEventTimeRange(start: Date, end: Date): string {
+    const fmt = (d: Date) =>
+      `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+    return `${fmt(start)} - ${fmt(end)}`;
   }
 
   private getStatusColor(status: number): string {

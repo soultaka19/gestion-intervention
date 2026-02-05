@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { Api } from '../../../core/services/api';
 import {
   Intervention,
@@ -9,7 +9,7 @@ import {
   CompleteIntervention,
   CancelIntervention,
   InterventionFilters,
-  PlanningResponse,
+  PlanningDayGroup,
 } from '../models/intervention';
 
 @Injectable({
@@ -182,13 +182,15 @@ export class InterventionData {
     );
   }
 
-  getPlanning(startDate: string, endDate: string, technicianId?: string): Observable<PlanningResponse> {
+  getPlanning(startDate: string, endDate: string, technicianId?: string): Observable<Intervention[]> {
     const params = new URLSearchParams();
     params.append('startDate', startDate);
     params.append('endDate', endDate);
     if (technicianId) params.append('technicianId', technicianId);
 
-    return this.api.get<PlanningResponse>(`/interventions/planning?${params.toString()}`);
+    return this.api.get<PlanningDayGroup[]>(`/interventions/planning?${params.toString()}`).pipe(
+      map(groups => groups.flatMap(g => g.interventions))
+    );
   }
 
   getMyInterventions(date?: string, status?: number): Observable<Intervention[]> {

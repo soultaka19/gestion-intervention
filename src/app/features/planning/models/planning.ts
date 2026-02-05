@@ -15,6 +15,7 @@ export interface CalendarIntervention {
   type: number;
   status: number;
   description: string;
+  timeRange: string;
 }
 
 export interface WeekDay {

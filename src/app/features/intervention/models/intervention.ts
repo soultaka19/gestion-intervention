@@ -139,9 +139,7 @@ export interface InterventionFilters {
   toDate?: string;
 }
 
-export interface PlanningResponse {
-  startDate: string;
-  endDate: string;
+export interface PlanningDayGroup {
+  date: string;
   interventions: Intervention[];
-  totalCount: number;
 }

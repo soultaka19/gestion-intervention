@@ -1,12 +1,10 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
 import { Technician } from '../../../technician/models/technician';
 import { AssignTechnician } from '../../models/intervention';
-
-
 
 @Component({
   selector: 'app-intervention-assign',
@@ -22,8 +20,8 @@ import { AssignTechnician } from '../../models/intervention';
         <p-select
           id="technicianId"
           formControlName="technicianId"
-          [options]="technicians()"
-          optionLabel="firstName"
+          [options]="technicianOptions()"
+          optionLabel="fullName"
           optionValue="id"
           placeholder="Sélectionnez un technicien"
           styleClass="w-full"
@@ -106,6 +104,13 @@ export class InterventionAssign {
 
   technicians = input<Technician[]>([]);
   loading = input(false);
+
+  technicianOptions = computed(() =>
+    this.technicians().map(t => ({
+      id: t.id,
+      fullName: `${t.firstName} ${t.lastName}`,
+    }))
+  );
 
   save = output<AssignTechnician>();
   cancel = output<void>();

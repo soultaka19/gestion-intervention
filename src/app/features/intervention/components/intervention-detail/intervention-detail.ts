@@ -326,7 +326,7 @@ import { InterventionComplete } from '../intervention-complete/intervention-comp
 })
 export class InterventionDetail implements OnInit {
   interventionData = inject(InterventionData);
-  technicianData = inject(TechnicianData)
+  technicianData = inject(TechnicianData);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private confirmationService = inject(ConfirmationService);
@@ -337,13 +337,12 @@ export class InterventionDetail implements OnInit {
   showCompleteDialog = false;
   saving = signal(false);
 
-  // TODO: Charger depuis l'API des utilisateurs
-
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadIntervention(id);
     }
+    this.loadTechnicians();
   }
 
   loadIntervention(id: string): void {
@@ -358,7 +357,7 @@ export class InterventionDetail implements OnInit {
     });
   }
 
-  loadTechnician() : void {
+  loadTechnicians(): void {
     this.technicianData.getAll().subscribe();
   }
 

@@ -129,7 +129,7 @@ import { InterventionTable } from '../intervention-table/intervention-table';
       [resizable]="false"
     >
       <app-intervention-assign
-        [technicians]="technicianDate.technicians()"
+        [technicians]="technicianData.technicians()"
         [loading]="saving()"
         (save)="onAssign($event)"
         (cancel)="closeAssignDialog()"
@@ -141,7 +141,7 @@ export class InterventionList implements OnInit {
   interventionData = inject(InterventionData);
   clientData = inject(ClientData);
   equipmentData = inject(EquipmentData);
-  technicianDate = inject(TechnicianData);
+  technicianData = inject(TechnicianData);
   private router = inject(Router);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
@@ -178,9 +178,10 @@ export class InterventionList implements OnInit {
     });
   }
 
-  loadTechnicians() : void{
-    this.technicianDate.getAll().subscribe();
+  loadTechnicians(): void {
+    this.technicianData.getAll().subscribe();
   }
+
   loadClients(): void {
     this.clientData.getAll().subscribe();
   }
