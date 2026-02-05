@@ -5,7 +5,12 @@
       "Bash(dotnet build:*)",
       "Bash(git checkout:*)",
       "Bash(git add:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell:*)",
+      "Bash(az account show:*)",
+      "Bash(npx ng build:*)"
     ]
   }
 }

@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.techmaint.com/api'
+  apiUrl: 'https://techmaint-api.azurewebsites.net/api'
 };
