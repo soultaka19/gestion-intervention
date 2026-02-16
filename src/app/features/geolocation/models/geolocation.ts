@@ -38,8 +38,8 @@ export interface MapBounds {
   west: number;
 }
 
-export const DEFAULT_MAP_CENTER: [number, number] = [46.603354, 1.888334]; // France center
-export const DEFAULT_MAP_ZOOM = 6;
+export const DEFAULT_MAP_CENTER: [number, number] = [45.4765, -75.7013]; // Gatineau/Ottawa
+export const DEFAULT_MAP_ZOOM = 7;
 
 export const MARKER_COLORS: Record<number, string> = {
   0: '#f97316', // Pending - orange

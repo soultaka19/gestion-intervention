@@ -505,7 +505,7 @@ export class PlanningCalendar implements OnInit {
   private getEventsForDay(date: Date): CalendarEvent[] {
     const dateStr = this.formatDate(date);
     return this.interventions()
-      .filter(i => i.scheduledDate === dateStr)
+      .filter(i => i.scheduledDate?.substring(0, 10) === dateStr)
       .map(i => this.interventionToEvent(i));
   }
 
