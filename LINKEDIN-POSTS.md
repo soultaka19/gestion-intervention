@@ -187,12 +187,55 @@ Je suis preneur de vos retours / bonnes pratiques.
 
 ---
 
-## Jour 6 - Planning (Itération 5)
+## Jour 6 - Suivi en temps réel & Itinéraire (Itération 5)
 
-> A venir
+📍 Build in Public — Phase 6 : Suivi GPS en temps réel
+
+Aujourd'hui, j'ai implémenté la fonctionnalité qui donne vie à TechMaint : le suivi en temps réel des techniciens sur la carte avec calcul d'itinéraire automatique.
+
+Ce qui a été fait :
+
+Backend (.NET 10)
+- SignalR Hub : broadcast des positions en temps réel à tous les utilisateurs de l'organisation
+- Endpoint REST /location/update : sauvegarde + diffusion instantanée via WebSocket
+- Architecture multi-tenant respectée : chaque organisation ne reçoit que les positions de ses propres techniciens
+- Données de position : latitude, longitude, vitesse, cap, horodatage
+
+Frontend (Angular 21)
+- Carte Leaflet avec couche "Techniciens en direct" activable
+- Marqueurs animés avec icônes distinctes (cercles bleus) et popup info
+- Calcul d'itinéraire via OSRM (Open Source Routing Machine) — gratuit, sans clé API
+- Bouton "Itinéraire" sur chaque intervention planifiée : lance automatiquement le suivi sur la carte
+- Simulation de déplacement : le technicien suit le tracé routier réel point par point
+- Barre de progression en temps réel ("En route... 45%")
+- Navigation cross-composant : clic sur "Itinéraire" dans le détail → redirection vers la carte avec démarrage automatique
+
+Le point technique intéressant : un bug subtil où le suivi ne fonctionnait pas en temps réel. Le endpoint REST sauvegardait la position en base de données mais ne la diffusait pas via SignalR — seul le Hub le faisait. Résultat : la carte ne se mettait jamais à jour. La correction ? Injecter IHubContext<LocationHub> dans le contrôleur REST pour broadcaster après chaque sauvegarde. Un rappel qu'avec les WebSockets, sauvegarder et notifier sont deux responsabilités distinctes qu'il ne faut pas confondre.
+
+Autre choix technique : OSRM au lieu de Google Maps pour le calcul d'itinéraire. Gratuit, open source, et les routes suivent le réseau routier réel. Le fallback en interpolation linéaire garantit que la fonctionnalité reste disponible même si le service est indisponible.
+
+L'app est disponible sur : https://lnkd.in/eJ7Bn8PC
+Compte démo : demo2@techmaint.com / Demo123!
+
+Sur ce suivi en temps réel avec SignalR + OSRM,
+qu'est-ce que vous auriez fait différemment ?
+WebSockets vs SSE ? Google Maps vs OSRM ?
+Je suis preneur de vos retours.
+
+#BuildInPublic #Angular #DotNet #SignalR #WebSocket #Leaflet #OSRM #RealTime #Azure #SaaS #GestionIntervention #TechMaint #DevJourney
+
+### Captures suggérées (carrousel 6-7 slides)
+
+1. **Carte avec technicien en mouvement** - La carte Leaflet avec le marqueur technicien et le tracé de l'itinéraire OSRM
+2. **Bouton Itinéraire** - Le détail d'une intervention planifiée avec le bouton "Itinéraire" visible
+3. **Simulation en cours** - La barre de progression "En route... 65%" avec le marqueur qui avance sur la route
+4. **Code Backend : LocationController.cs** - L'injection de IHubContext et le broadcast après sauvegarde (le bug fix)
+5. **Code Frontend : intervention-map.ts** - La méthode fetchOsrmRoute() avec l'appel à l'API OSRM et le fallback
+6. **Code Frontend : simulation.ts** - Le service startAlongRoute() qui fait avancer le technicien point par point
+7. **(Bonus) Architecture SignalR** - Schéma simple : Frontend → REST API → DB + SignalR Hub → Tous les clients connectés
 
 ---
 
-## Jour 7 - Géolocalisation & Dashboard (Itération 6)
+## Jour 7 - Dashboard & Finalisation (Itération 6)
 
 > A venir
