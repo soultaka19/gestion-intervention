@@ -65,6 +65,14 @@ import { InterventionComplete } from '../intervention-complete/intervention-comp
                 (onClick)="openAssignDialog()"
               />
             }
+            @if (intervention()!.status === 1 || intervention()!.status === 2) {
+              <p-button
+                label="Itinéraire"
+                icon="pi pi-map"
+                severity="help"
+                (onClick)="goToRoute()"
+              />
+            }
             @if (intervention()!.status === 1) {
               <p-button
                 label="Démarrer"
@@ -364,6 +372,20 @@ export class InterventionDetail implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/home/interventions']);
+  }
+
+  goToRoute(): void {
+    const i = this.intervention();
+    if (!i) return;
+    this.router.navigate(['/home/carte'], {
+      queryParams: {
+        interventionId: i.id,
+        technicianId: i.technicianId,
+        lat: i.clientLatitude,
+        lng: i.clientLongitude,
+        clientName: i.clientName,
+      },
+    });
   }
 
   getStatusLabel(status: number): string {
