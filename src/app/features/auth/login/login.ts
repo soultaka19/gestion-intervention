@@ -7,6 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { CheckboxModule } from 'primeng/checkbox';
 import { Auth } from '../../../core/auth/services/auth';
+import { retry, timer } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -147,13 +148,32 @@ export class Login {
 
     const { email, password } = this.form.value;
 
-    this.auth.login({ email, password }).subscribe({
+    this.auth.login({ email, password }).pipe(
+      retry({
+        count: 1,
+        delay: (error) => {
+          // Only retry on 500 or network errors (status 0)
+          if (error.status === 500 || error.status === 0) {
+            return timer(1500);
+          }
+          throw error;
+        },
+      })
+    ).subscribe({
       next: () => {
         this.router.navigate(['/home/dashbord']);
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set(err.message || 'Erreur de connexion');
+        if (err.error?.message) {
+          this.errorMessage.set(err.error.message);
+        } else if (err.status === 401) {
+          this.errorMessage.set('Email ou mot de passe incorrect');
+        } else if (err.status === 500 || err.status === 0) {
+          this.errorMessage.set('Erreur du serveur, veuillez réessayer');
+        } else {
+          this.errorMessage.set('Erreur de connexion');
+        }
       }
     });
   }

@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { LocationData } from './location-data';
+import { TechnicianLocation } from '../models/geolocation';
 
 @Injectable({
   providedIn: 'root',
@@ -30,13 +31,7 @@ export class SimulationService {
 
     // Send initial position immediately
     const [lat, lng] = routePoints[0];
-    this.locationData.updateLocation({
-      latitude: lat,
-      longitude: lng,
-      speed: 0,
-      heading: 0,
-      technicianId,
-    }).subscribe();
+    this.updateAndBroadcast(technicianId, lat, lng, 0, 0);
 
     this.intervalId = setInterval(() => {
       currentIndex++;
@@ -53,15 +48,9 @@ export class SimulationService {
       const heading = Math.atan2(lng - prevLng, lat - prevLat) * (180 / Math.PI);
       // Estimate speed based on distance / interval
       const distKm = this.haversine(prevLat, prevLng, lat, lng);
-      const speed = (distKm / (intervalMs / 1000)) * 3600; // km/h
+      const speed = Math.min((distKm / (intervalMs / 1000)) * 3600, 80); // km/h
 
-      this.locationData.updateLocation({
-        latitude: lat,
-        longitude: lng,
-        speed: Math.min(speed, 80),
-        heading,
-        technicianId,
-      }).subscribe();
+      this.updateAndBroadcast(technicianId, lat, lng, speed, heading);
 
       this.progress.set(Math.round((currentIndex / (routePoints.length - 1)) * 100));
     }, intervalMs);
@@ -74,6 +63,53 @@ export class SimulationService {
     }
     this.running.set(false);
     this.progress.set(0);
+  }
+
+  /**
+   * Optimistically update the local locations signal AND send to backend.
+   * This way the marker moves immediately without waiting for SignalR roundtrip.
+   */
+  private updateAndBroadcast(
+    technicianId: string,
+    lat: number,
+    lng: number,
+    speed: number,
+    heading: number
+  ): void {
+    // Optimistic local update — marker moves immediately
+    this.locationData.locations.update((prev) => {
+      const existing = prev.find((l) => l.technicianId === technicianId);
+      const updated: TechnicianLocation = {
+        technicianId,
+        technicianName: existing?.technicianName ?? 'Technicien',
+        latitude: lat,
+        longitude: lng,
+        accuracy: null,
+        speed,
+        heading,
+        timestamp: new Date().toISOString(),
+        isOnline: true,
+      };
+
+      const idx = prev.findIndex((l) => l.technicianId === technicianId);
+      if (idx >= 0) {
+        const copy = [...prev];
+        copy[idx] = updated;
+        return copy;
+      }
+      return [...prev, updated];
+    });
+
+    // Also send to backend for persistence / other clients
+    this.locationData.updateLocation({
+      latitude: lat,
+      longitude: lng,
+      speed,
+      heading,
+      technicianId,
+    }).subscribe({
+      error: (err) => console.warn('[Simulation] Failed to send location to server:', err.status),
+    });
   }
 
   private haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
