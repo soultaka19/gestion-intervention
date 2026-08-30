@@ -5,6 +5,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
 import { Technician } from '../../../technician/models/technician';
 import { AssignTechnician } from '../../models/intervention';
+import { formatDateLocale } from '../../../../core/utils/date';
 
 
 
@@ -132,8 +133,10 @@ export class InterventionAssign {
     this.save.emit(data);
   }
 
+  // F-11 — voir core/utils/date.ts : toISOString() convertit en UTC et
+  // decalait la date d'un jour selon le fuseau et l'heure de la saisie.
   private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
+    return formatDateLocale(date);
   }
 
   private formatTime(date: Date): string {

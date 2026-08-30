@@ -345,13 +345,18 @@ export class InterventionDetail implements OnInit {
   showCompleteDialog = false;
   saving = signal(false);
 
-  // TODO: Charger depuis l'API des utilisateurs
-
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadIntervention(id);
     }
+    // F-7 — la liste des techniciens etait chargee par `loadTechnician()`, que
+    // personne n'appelait. En arrivant sur la page depuis la liste, le cache du
+    // service etait deja rempli par l'ecran precedent et le dialogue
+    // « Affecter » paraissait fonctionner. En acces DIRECT a l'URL — un
+    // rechargement, un lien partage —, le cache etait vide et le dialogue
+    // s'ouvrait sans aucun technicien a choisir, sans message d'erreur.
+    this.loadTechnician();
   }
 
   loadIntervention(id: string): void {

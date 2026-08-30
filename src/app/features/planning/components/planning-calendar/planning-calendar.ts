@@ -22,6 +22,7 @@ import {
   TIME_SLOTS,
   WeekDay,
 } from '../../models/planning';
+import { formatDateLocale } from '../../../../core/utils/date';
 
 type ViewMode = 'week' | 'month';
 
@@ -498,8 +499,10 @@ export class PlanningCalendar implements OnInit {
     return new Date(d.setDate(diff));
   }
 
+  // F-11 — voir core/utils/date.ts : toISOString() convertit en UTC et
+  // decalait la date d'un jour selon le fuseau et l'heure de la saisie.
   private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
+    return formatDateLocale(date);
   }
 
   private getEventsForDay(date: Date): CalendarEvent[] {

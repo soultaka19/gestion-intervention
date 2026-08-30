@@ -90,7 +90,8 @@ L.Icon.Default.mergeOptions({
           <div class="w-48">
             <p-select
               [options]="statusOptions"
-              [(ngModel)]="selectedStatus"
+              [ngModel]="selectedStatus()"
+              (ngModelChange)="selectedStatus.set($event)"
               placeholder="Tous les statuts"
               optionLabel="label"
               optionValue="value"
@@ -103,7 +104,8 @@ L.Icon.Default.mergeOptions({
           <!-- Show clients toggle -->
           <div class="flex items-center gap-2">
             <p-checkbox
-              [(ngModel)]="showClients"
+              [ngModel]="showClients()"
+              (ngModelChange)="showClients.set($event)"
               [binary]="true"
               inputId="showClients"
               (onChange)="applyFilters()"
@@ -116,7 +118,8 @@ L.Icon.Default.mergeOptions({
           <!-- Show interventions toggle -->
           <div class="flex items-center gap-2">
             <p-checkbox
-              [(ngModel)]="showInterventions"
+              [ngModel]="showInterventions()"
+              (ngModelChange)="showInterventions.set($event)"
               [binary]="true"
               inputId="showInterventions"
               (onChange)="applyFilters()"
@@ -129,7 +132,8 @@ L.Icon.Default.mergeOptions({
           <!-- Show technicians toggle -->
           <div class="flex items-center gap-2">
             <p-checkbox
-              [(ngModel)]="showTechnicians"
+              [ngModel]="showTechnicians()"
+              (ngModelChange)="showTechnicians.set($event)"
               [binary]="true"
               inputId="showTechnicians"
               (onChange)="toggleTechnicianLayer()"
@@ -145,7 +149,7 @@ L.Icon.Default.mergeOptions({
               <i class="pi pi-map-marker text-blue-500 mr-1"></i>
               {{ visibleMarkers().length }} marqueurs
             </span>
-            @if (showTechnicians) {
+            @if (showTechnicians()) {
               <span>
                 <i class="pi pi-user text-green-500 mr-1"></i>
                 {{ locationData.locations().length }} technicien(s)
@@ -156,7 +160,7 @@ L.Icon.Default.mergeOptions({
       </div>
 
       <!-- Simulation controls -->
-      @if (showTechnicians) {
+      @if (showTechnicians()) {
         <div class="bg-amber-50 rounded-lg shadow-sm border border-amber-200 p-4 mb-4">
           <div class="flex flex-wrap items-center gap-4">
             <span class="text-sm font-medium text-amber-800">
@@ -166,7 +170,8 @@ L.Icon.Default.mergeOptions({
             <div class="w-56">
               <p-select
                 [options]="technicianOptions()"
-                [(ngModel)]="selectedTechnicianId"
+                [ngModel]="selectedTechnicianId()"
+                (ngModelChange)="selectedTechnicianId.set($event)"
                 placeholder="Choisir un technicien"
                 optionLabel="label"
                 optionValue="value"
@@ -181,7 +186,7 @@ L.Icon.Default.mergeOptions({
                 label="Simuler"
                 severity="warn"
                 size="small"
-                [disabled]="!selectedTechnicianId || loadingRoute"
+                [disabled]="!selectedTechnicianId() || loadingRoute"
                 (onClick)="startSimulation()"
               />
               @if (loadingRoute) {
@@ -273,11 +278,20 @@ export class InterventionMap implements OnInit, AfterViewInit, OnDestroy {
   technicians = signal<Technician[]>([]);
   loading = signal(false);
 
-  selectedStatus: number | null = null;
-  showClients = true;
-  showInterventions = true;
-  showTechnicians = false;
-  selectedTechnicianId: string | null = null;
+  // F-2 — ces cinq champs pilotent des `computed` : ils DOIVENT etre des
+  // signaux.
+  //
+  // Un `computed` ne se recalcule que lorsqu'un signal qu'il a lu change. Lus
+  // comme champs ordinaires, `showClients` et consorts n'etaient pas des
+  // dependances : cocher une case mettait bien le champ a jour, mais
+  // `allMarkers()` et `visibleMarkers()` renvoyaient leur valeur memorisee.
+  // Les filtres de la carte n'avaient donc aucun effet visible — y compris le
+  // filtre par statut, dont c'est pourtant la seule raison d'etre.
+  selectedStatus = signal<number | null>(null);
+  showClients = signal(true);
+  showInterventions = signal(true);
+  showTechnicians = signal(false);
+  selectedTechnicianId = signal<string | null>(null);
   loadingRoute = false;
 
   statusOptions = INTERVENTION_STATUSES;
@@ -293,7 +307,7 @@ export class InterventionMap implements OnInit, AfterViewInit, OnDestroy {
     const markers: MapMarker[] = [];
 
     // Add client markers
-    if (this.showClients) {
+    if (this.showClients()) {
       this.clients().forEach(client => {
         if (client.latitude && client.longitude) {
           markers.push({
@@ -317,7 +331,7 @@ export class InterventionMap implements OnInit, AfterViewInit, OnDestroy {
     }
 
     // Add intervention markers
-    if (this.showInterventions) {
+    if (this.showInterventions()) {
       this.interventions().forEach(intervention => {
         if (intervention.clientLatitude && intervention.clientLongitude) {
           markers.push({
@@ -352,19 +366,34 @@ export class InterventionMap implements OnInit, AfterViewInit, OnDestroy {
     let markers = this.allMarkers();
 
     // Filter by status if selected
-    if (this.selectedStatus !== null) {
+    const statut = this.selectedStatus();
+    if (statut !== null) {
       markers = markers.filter(
-        m => m.type === 'client' || m.status === this.selectedStatus
+        m => m.type === 'client' || m.status === statut
       );
     }
 
     return markers;
   });
 
+  // F-2 — redessin automatique.
+  //
+  // `renderMarkers()` etait appele a la main depuis `loadData()`,
+  // `applyFilters()` et l'initialisation de la carte. Un appel oublie, ou un
+  // `computed` qui ne se recalculait pas, et la carte restait figee. L'effet
+  // s'abonne a `visibleMarkers()` : tout changement de filtre ou de donnees
+  // redessine, sans qu'aucun appelant n'ait a y penser.
+  private redessinEffect = effect(() => {
+    const marqueurs = this.visibleMarkers();
+    if (this.markersLayer && this.map) {
+      this.dessinerMarqueurs(marqueurs);
+    }
+  });
+
   // Effect to update technician markers when locations change
   private technicianEffect = effect(() => {
     const locations = this.locationData.locations();
-    if (this.showTechnicians && this.technicianMarkersLayer && this.map) {
+    if (this.showTechnicians() && this.technicianMarkersLayer && this.map) {
       this.renderTechnicianMarkers(locations);
     }
   });
@@ -400,11 +429,11 @@ export class InterventionMap implements OnInit, AfterViewInit, OnDestroy {
       const destLng = parseFloat(lng);
 
       // Enable technician layer + connect SignalR
-      this.showTechnicians = true;
+      this.showTechnicians.set(true);
       this.toggleTechnicianLayer().then(() => {
         // Wait for data to load, then auto-start simulation
         setTimeout(() => {
-          this.selectedTechnicianId = technicianId;
+          this.selectedTechnicianId.set(technicianId);
           this.autoStartRoute(technicianId, destLat, destLng, clientName || 'Client');
         }, 1500);
       });
@@ -505,12 +534,17 @@ export class InterventionMap implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /**
+   * Conserve pour les liaisons du template (`(onChange)="applyFilters()"`).
+   * Le redessin est desormais assure par l'effet : les filtres etant des
+   * signaux, tout changement recalcule `visibleMarkers()` et redessine.
+   */
   applyFilters(): void {
-    this.renderMarkers();
+    // volontairement vide — voir redessinEffect
   }
 
   async toggleTechnicianLayer(): Promise<void> {
-    if (this.showTechnicians) {
+    if (this.showTechnicians()) {
       try {
         await this.locationData.connect();
         // Also load initial positions via REST
@@ -535,11 +569,12 @@ export class InterventionMap implements OnInit, AfterViewInit, OnDestroy {
   }
 
   startSimulation(): void {
-    if (!this.selectedTechnicianId) return;
+    const technicienChoisi = this.selectedTechnicianId();
+    if (!technicienChoisi) return;
 
     // Find planned (1) or in-progress (2) interventions assigned to this technician
     const techInterventions = this.interventions().filter(
-      i => i.technicianId === this.selectedTechnicianId &&
+      i => i.technicianId === technicienChoisi &&
            (i.status === 1 || i.status === 2) &&
            i.clientLatitude && i.clientLongitude
     );
@@ -572,7 +607,7 @@ export class InterventionMap implements OnInit, AfterViewInit, OnDestroy {
         const sampled = this.samplePoints(routePoints, 30);
 
         this.simulation.startAlongRoute(
-          this.selectedTechnicianId!,
+          technicienChoisi,
           sampled,
           4000
         );
@@ -749,12 +784,20 @@ export class InterventionMap implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /** Redessin explicite, pour l'initialisation de la carte. */
   private renderMarkers(): void {
+    this.dessinerMarqueurs(this.visibleMarkers());
+  }
+
+  /**
+   * Dessine les marqueurs fournis. Prend la liste en argument pour que la
+   * dependance au signal soit LUE PAR L'EFFET, pas ici : un effet ne suit que
+   * les signaux lus dans son propre corps.
+   */
+  private dessinerMarqueurs(markers: MapMarker[]): void {
     if (!this.map || !this.markersLayer) return;
 
     this.markersLayer.clearLayers();
-
-    const markers = this.visibleMarkers();
 
     markers.forEach(marker => {
       const leafletMarker = this.createMarker(marker);
