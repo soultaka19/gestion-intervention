@@ -369,18 +369,14 @@ export class InterventionMap implements OnInit, AfterViewInit, OnDestroy {
     }
   });
 
-  constructor() {
-    // Listen for navigation events from popup
-    if (typeof window !== 'undefined') {
-      window.addEventListener('viewClient', ((e: CustomEvent) => {
-        this.router.navigate(['/home/clients', e.detail]);
-      }) as EventListener);
-
-      window.addEventListener('viewIntervention', ((e: CustomEvent) => {
-        this.router.navigate(['/home/interventions', e.detail]);
-      }) as EventListener);
-    }
-  }
+  // F-1 / F-13 — les ecouteurs `window` ont disparu avec les `onclick` inline.
+  //
+  // Les popups portaient un `onclick="window.dispatchEvent(new CustomEvent(...))"`,
+  // ce qui obligeait le composant a ecouter `window` pour naviguer. Ces deux
+  // ecouteurs n'etaient jamais retires : chaque montage du composant en ajoutait
+  // une paire (fuite F-13), et chacun repondait a un evenement que n'importe
+  // quel script de la page pouvait emettre. Les boutons appellent desormais
+  // directement le routeur, dans la portee du composant.
 
   ngOnInit(): void {
     this.loadData();
@@ -714,18 +710,39 @@ export class InterventionMap implements OnInit, AfterViewInit, OnDestroy {
 
       const marker = L.marker([loc.latitude, loc.longitude], { icon });
 
-      const popup = `
-        <div class="p-2">
-          <h3 class="font-semibold text-gray-900 mb-1">
-            <i class="pi pi-user mr-1" style="color: #0d9488;"></i>${loc.technicianName}
-          </h3>
-          <p class="text-sm text-gray-600 mb-1">
-            ${loc.isOnline ? '<span style="color: #22c55e;">● En ligne</span>' : '<span style="color: #9ca3af;">● Hors ligne</span>'}
-          </p>
-          ${loc.speed ? `<p class="text-sm text-gray-600">${Math.round(loc.speed)} km/h</p>` : ''}
-          <p class="text-xs text-gray-400 mt-1">${new Date(loc.timestamp).toLocaleTimeString('fr-FR')}</p>
-        </div>
-      `;
+      // F-1 — `technicianName` vient de la base : construit par le DOM, jamais
+      // par interpolation dans une chaine HTML.
+      const popup = document.createElement('div');
+      popup.className = 'p-2';
+
+      const titre = document.createElement('h3');
+      titre.className = 'font-semibold text-gray-900 mb-1';
+      const icone = document.createElement('i');
+      icone.className = 'pi pi-user mr-1';
+      icone.style.color = '#0d9488';
+      titre.appendChild(icone);
+      titre.appendChild(document.createTextNode(loc.technicianName ?? ''));
+      popup.appendChild(titre);
+
+      const etat = document.createElement('p');
+      etat.className = 'text-sm text-gray-600 mb-1';
+      const pastille = document.createElement('span');
+      pastille.style.color = loc.isOnline ? '#22c55e' : '#9ca3af';
+      pastille.textContent = loc.isOnline ? '● En ligne' : '● Hors ligne';
+      etat.appendChild(pastille);
+      popup.appendChild(etat);
+
+      if (loc.speed) {
+        const vitesse = document.createElement('p');
+        vitesse.className = 'text-sm text-gray-600';
+        vitesse.textContent = `${Math.round(loc.speed)} km/h`;
+        popup.appendChild(vitesse);
+      }
+
+      const horodatage = document.createElement('p');
+      horodatage.className = 'text-xs text-gray-400 mt-1';
+      horodatage.textContent = new Date(loc.timestamp).toLocaleTimeString('fr-FR');
+      popup.appendChild(horodatage);
 
       marker.bindPopup(popup, { maxWidth: 250 });
       this.technicianMarkersLayer!.addLayer(marker);
@@ -796,59 +813,112 @@ export class InterventionMap implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private createPopupContent(marker: MapMarker): string {
-    if (marker.type === 'client') {
-      const data = marker.data as any;
-      return `
-        <div class="p-2">
-          <h3 class="font-semibold text-gray-900 mb-2">${data.name}</h3>
-          <p class="text-sm text-gray-600 mb-1">
-            <i class="pi pi-map-marker mr-1"></i>${data.address}
-          </p>
-          ${data.phone ? `<p class="text-sm text-gray-600 mb-1">
-            <i class="pi pi-phone mr-1"></i>${data.phone}
-          </p>` : ''}
-          <p class="text-sm text-gray-500 mt-2">
-            ${data.interventionCount} intervention(s)
-          </p>
-          <button onclick="window.dispatchEvent(new CustomEvent('viewClient', {detail: '${data.id}'}))"
-            class="mt-2 text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer">
-            Voir le client →
-          </button>
-        </div>
-      `;
-    } else {
-      const data = marker.data as any;
-      const statusLabel = INTERVENTION_STATUS_LABELS[data.status];
-      const typeLabel = INTERVENTION_TYPE_LABELS[data.type];
-      const statusColor = MARKER_COLORS[data.status];
+  /**
+   * Construit le contenu d'un popup **par le DOM**, jamais par concatenation
+   * de chaines (F-1).
+   *
+   * L'implementation precedente interpolait directement `data.name`,
+   * `data.address`, `data.phone`, `data.description` et `data.technicianName`
+   * dans une chaine HTML passee a `bindPopup()`. Un nom de client valant
+   * `<img src=x onerror=alert(document.cookie)>` s'executait donc chez tous les
+   * utilisateurs de l'organisation ouvrant la carte : un XSS **stocke**, la
+   * variante la plus grave, puisque la charge est servie par l'application
+   * elle-meme a chaque affichage.
+   *
+   * `textContent` ecrit du texte, jamais du balisage : la donnee ne peut plus
+   * etre interpretee. Les boutons portent un vrai `addEventListener` au lieu
+   * d'un `onclick` inline qui reinjectait l'identifiant dans du code.
+   */
+  private createPopupContent(marker: MapMarker): HTMLElement {
+    const data = marker.data as any;
+    const racine = document.createElement('div');
+    racine.className = 'p-2';
 
-      return `
-        <div class="p-2">
-          <div class="flex items-center gap-2 mb-2">
-            <span style="background-color: ${statusColor}20; color: ${statusColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
-              ${typeLabel}
-            </span>
-            <span style="background-color: ${statusColor}20; color: ${statusColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
-              ${statusLabel}
-            </span>
-          </div>
-          <h3 class="font-semibold text-gray-900 mb-1">${data.clientName}</h3>
-          <p class="text-sm text-gray-600 mb-2">${data.clientAddress}</p>
-          ${data.technicianName ? `<p class="text-sm text-gray-600 mb-1">
-            <i class="pi pi-user mr-1"></i>${data.technicianName}
-          </p>` : ''}
-          ${data.scheduledDate ? `<p class="text-sm text-gray-600 mb-1">
-            <i class="pi pi-calendar mr-1"></i>${data.scheduledDate}
-            ${data.scheduledStartTime ? ` à ${data.scheduledStartTime.substring(0, 5)}` : ''}
-          </p>` : ''}
-          <p class="text-sm text-gray-500 mt-2 line-clamp-2">${data.description}</p>
-          <button onclick="window.dispatchEvent(new CustomEvent('viewIntervention', {detail: '${data.id}'}))"
-            class="mt-2 text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer">
-            Voir l'intervention →
-          </button>
-        </div>
-      `;
+    if (marker.type === 'client') {
+      racine.appendChild(this.titre(data.name));
+      racine.appendChild(this.ligne(data.address, 'pi-map-marker'));
+      if (data.phone) {
+        racine.appendChild(this.ligne(data.phone, 'pi-phone'));
+      }
+      racine.appendChild(
+        this.ligne(`${data.interventionCount} intervention(s)`, null, 'text-gray-500 mt-2'),
+      );
+      racine.appendChild(
+        this.bouton('Voir le client →', () =>
+          this.router.navigate(['/home/clients', data.id])),
+      );
+      return racine;
     }
+
+    const couleur = MARKER_COLORS[data.status];
+    const etiquettes = document.createElement('div');
+    etiquettes.className = 'flex items-center gap-2 mb-2';
+    // Les libelles viennent de constantes du code, pas de la base ; ils sont
+    // neanmoins poses en textContent, par uniformite.
+    etiquettes.appendChild(this.etiquette(INTERVENTION_TYPE_LABELS[data.type], couleur));
+    etiquettes.appendChild(this.etiquette(INTERVENTION_STATUS_LABELS[data.status], couleur));
+    racine.appendChild(etiquettes);
+
+    racine.appendChild(this.titre(data.clientName));
+    racine.appendChild(this.ligne(data.clientAddress, null, 'text-gray-600 mb-2'));
+    if (data.technicianName) {
+      racine.appendChild(this.ligne(data.technicianName, 'pi-user'));
+    }
+    if (data.scheduledDate) {
+      const heure = data.scheduledStartTime
+        ? ` à ${String(data.scheduledStartTime).substring(0, 5)}`
+        : '';
+      racine.appendChild(this.ligne(`${data.scheduledDate}${heure}`, 'pi-calendar'));
+    }
+    if (data.description) {
+      racine.appendChild(
+        this.ligne(data.description, null, 'text-gray-500 mt-2 line-clamp-2'),
+      );
+    }
+    racine.appendChild(
+      this.bouton("Voir l'intervention →", () =>
+        this.router.navigate(['/home/interventions', data.id])),
+    );
+    return racine;
+  }
+
+  private titre(texte: string): HTMLElement {
+    const h = document.createElement('h3');
+    h.className = 'font-semibold text-gray-900 mb-1';
+    h.textContent = texte ?? '';
+    return h;
+  }
+
+  private ligne(texte: string, icone: string | null = null, classes = 'text-gray-600 mb-1'): HTMLElement {
+    const p = document.createElement('p');
+    p.className = `text-sm ${classes}`;
+    if (icone) {
+      const i = document.createElement('i');
+      i.className = `pi ${icone} mr-1`;
+      p.appendChild(i);
+    }
+    // textContent et non innerHTML : c'est ici que se jouait le XSS.
+    p.appendChild(document.createTextNode(texte ?? ''));
+    return p;
+  }
+
+  private etiquette(texte: string, couleur: string): HTMLElement {
+    const span = document.createElement('span');
+    span.style.backgroundColor = `${couleur}20`;
+    span.style.color = couleur;
+    span.style.padding = '2px 8px';
+    span.style.borderRadius = '4px';
+    span.style.fontSize = '12px';
+    span.textContent = texte ?? '';
+    return span;
+  }
+
+  private bouton(libelle: string, action: () => void): HTMLElement {
+    const b = document.createElement('button');
+    b.className = 'mt-2 text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer';
+    b.textContent = libelle;
+    // Un vrai ecouteur : plus d'identifiant reinjecte dans une chaine de code.
+    b.addEventListener('click', action);
+    return b;
   }
 }
