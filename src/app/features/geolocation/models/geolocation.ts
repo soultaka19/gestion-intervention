@@ -38,8 +38,8 @@ export interface MapBounds {
   west: number;
 }
 
-export const DEFAULT_MAP_CENTER: [number, number] = [46.603354, 1.888334]; // France center
-export const DEFAULT_MAP_ZOOM = 6;
+export const DEFAULT_MAP_CENTER: [number, number] = [45.4765, -75.7013]; // Gatineau/Ottawa
+export const DEFAULT_MAP_ZOOM = 7;
 
 export const MARKER_COLORS: Record<number, string> = {
   0: '#f97316', // Pending - orange
@@ -48,3 +48,54 @@ export const MARKER_COLORS: Record<number, string> = {
   3: '#22c55e', // Completed - green
   4: '#ef4444', // Cancelled - red
 };
+
+// --- Real-time tracking models ---
+
+export interface TechnicianLocation {
+  technicianId: string;
+  technicianName: string;
+  latitude: number;
+  longitude: number;
+  accuracy: number | null;
+  speed: number | null;
+  heading: number | null;
+  timestamp: string;
+  isOnline: boolean;
+}
+
+export interface UpdateLocationDto {
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
+  speed?: number;
+  heading?: number;
+  technicianId?: string;
+}
+
+export interface CoordinatesDto {
+  latitude: number;
+  longitude: number;
+  label?: string;
+}
+
+export interface RouteOptimizationRequest {
+  origin: CoordinatesDto;
+  waypoints: CoordinatesDto[];
+  destination?: CoordinatesDto;
+}
+
+export interface RouteStep {
+  order: number;
+  location: CoordinatesDto;
+  label: string | null;
+  distanceFromPreviousKm: number;
+  durationFromPreviousMinutes: number;
+}
+
+export interface RouteOptimizationResult {
+  optimizedRoute: RouteStep[];
+  totalDistanceKm: number;
+  totalDurationMinutes: number;
+  success: boolean;
+  errorMessage: string | null;
+}

@@ -7,6 +7,7 @@ import { SelectModule } from 'primeng/select';
 import { TextareaModule } from 'primeng/textarea';
 import { Client } from '../../../client/models/client';
 import { CreateEquipment, Equipment, EQUIPMENT_TYPES } from '../../models/equipment';
+import { formatDateLocale } from '../../../../core/utils/date';
 
 @Component({
   selector: 'app-equipment-form',
@@ -253,7 +254,9 @@ export class EquipmentForm implements OnInit {
     this.save.emit(data);
   }
 
+  // F-11 — voir core/utils/date.ts : toISOString() convertit en UTC et
+  // decalait la date d'un jour selon le fuseau et l'heure de la saisie.
   private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
+    return formatDateLocale(date);
   }
 }

@@ -3,6 +3,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { Auth } from '../../core/auth/services/auth';
+import { USER_ROLE_LABELS } from '../../core/auth/models/auth.models';
 
 @Component({
   selector: 'app-sidebar-user',
@@ -70,14 +71,13 @@ export class SidebarUser {
     return 'U';
   });
 
+  // F-8 — la table etait indexee par des chaines alors que l'API envoie des
+  // entiers : `roleLabels[0]` valait undefined et le repli affichait « 0 ».
+  // Le test `role ? ...` masquait en plus le role Admin, dont la valeur est 0,
+  // donc falsy : un administrateur ne voyait aucun role du tout.
   userRoleLabel = computed(() => {
     const role = this.auth.userRole();
-    const roleLabels: Record<string, string> = {
-      'Admin': 'Administrateur',
-      'Planificateur': 'Planificateur',
-      'Technicien': 'Technicien'
-    };
-    return role ? roleLabels[role] || role : '';
+    return role === null || role === undefined ? '' : (USER_ROLE_LABELS[role] ?? '');
   });
 
   onLogout(): void {

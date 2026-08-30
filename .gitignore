@@ -41,3 +41,6 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Journal de deploiement Azure Static Web Apps (obsolete)
+swa-deploy.log
