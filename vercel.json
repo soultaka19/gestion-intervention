@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "dist/gestion-intervention/browser",
+  "rewrites": [
+    {
+      "source": "/api/:chemin*",
+      "destination": "https://techmaint-api.soultaka.com/api/:chemin*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
