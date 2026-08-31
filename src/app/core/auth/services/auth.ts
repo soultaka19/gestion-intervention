@@ -49,6 +49,16 @@ export class Auth {
     return this.tokenSignal();
   }
 
+  /**
+   * Ouvre une session à partir d'une réponse d'authentification déjà obtenue.
+   *
+   * Le bac à sable de démonstration renvoie son jeton dès la création : sans
+   * cette méthode il faudrait rejouer une connexion pour un jeton qu'on a déjà.
+   */
+  applySession(response: AuthResponse): void {
+    this.handleAuthSuccess(response);
+  }
+
   private handleAuthSuccess(response: AuthResponse): void {
     localStorage.setItem(TOKEN_KEY, response.token);
     localStorage.setItem(USER_KEY, JSON.stringify(response.user));

@@ -3,6 +3,14 @@ import { Layout } from './layout/layout';
 import { authGuard, guestGuard } from './core/auth/guards/auth.guard';
 
 export const routes: Routes = [
+  // Demonstration publique : cree un bac a sable jetable et y entre
+  // directement. Aucun garde : c'est justement le point d'entree de
+  // quelqu'un qui n'a pas de compte.
+  {
+    path: 'demo',
+    loadComponent: () => import('./features/demo/demo-entry').then(m => m.DemoEntry)
+  },
+
   // Auth routes (public)
   {
     path: 'auth',

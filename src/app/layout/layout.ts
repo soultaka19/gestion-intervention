@@ -4,10 +4,11 @@ import { fromEvent } from 'rxjs';
 import { debounceTime, map } from 'rxjs/operators';
 import { Navbar } from "./navbar/navbar";
 import { Sidebar } from "./sidebar/sidebar";
+import { DemoBanner } from "../features/demo/demo-banner";
 
 @Component({
   selector: 'app-layout',
-  imports: [Sidebar, Navbar, RouterOutlet],
+  imports: [Sidebar, Navbar, RouterOutlet, DemoBanner],
   template: `
     <div class="flex h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 overflow-hidden">
       <!-- Overlay pour fermer la sidebar au clic extérieur -->
@@ -24,7 +25,10 @@ import { Sidebar } from "./sidebar/sidebar";
 
       <!-- Contenu principal -->
       <div class="flex-1 flex flex-col overflow-hidden">
-        <app-navbar 
+        <!-- Ne s'affiche que dans un bac a sable de demonstration -->
+        <app-demo-banner />
+
+        <app-navbar
           (toggleSidebar)="toggleSidebar()"
           [isCollapsed]="isCollapsed()"
         />
