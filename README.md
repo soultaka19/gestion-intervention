@@ -1,59 +1,61 @@
-# GestionIntervention
+# TechMaint
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.5.
+**Gestion d'interventions terrain pour plusieurs organisations sur une même instance, cloisonnées jusque dans les canaux temps réel.**
 
-## Development server
+**Démonstration ouverte, sans inscription : [techmaint.soultaka.com/demo](https://techmaint.soultaka.com/demo)**
 
-To start a local development server, run:
+---
 
-```bash
-ng serve
-```
+## Le problème
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Une plateforme multi-locataire est facile à écrire et difficile à rendre étanche. Le filtrage par organisation se met naturellement dans les contrôleurs HTTP, où il est visible et testé. Il s'oublie partout ailleurs : dans les tâches de fond, dans les rapports, et surtout dans les canaux temps réel, où le contexte de la requête HTTP n'existe plus.
 
-## Code scaffolding
+C'est le point sur lequel ce projet a été construit.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## L'isolation, et où elle est posée
 
-```bash
-ng generate component component-name
-```
+**Au niveau du contexte de données, pas des contrôleurs.** Toute entité rattachée à une organisation implémente `ITenantEntity`, et le filtrage est appliqué globalement à la source. Un développeur qui ajoute une requête n'a pas à se souvenir d'ajouter la condition : il faudrait un effort délibéré pour la contourner.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+**Jusque dans le temps réel.** Le suivi de position des techniciens passe par SignalR, où le contexte HTTP n'est pas transmis. Un `TenantHubFilter` résout l'organisation à la connexion et **refuse l'abonnement** plutôt que de filtrer la lecture : un client d'une autre organisation ne reçoit pas des messages vides, il ne s'abonne jamais.
 
-```bash
-ng generate --help
-```
+**Un mode démonstration qui se nettoie tout seul.** Chaque visiteur de `/demo` obtient une organisation isolée, peuplée de données réalistes et détruite automatiquement par un service de nettoyage. C'est ce qui permet d'ouvrir la démonstration sans inscription et sans qu'un visiteur voie le travail d'un autre.
 
-## Building
+## Ce que couvre l'application
 
-To build the project run:
+Clients, équipements, techniciens, interventions et rapports d'intervention, avec planification, géolocalisation des techniciens, optimisation d'itinéraires et tableau de bord.
 
-```bash
-ng build
-```
+## Architecture
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Deux dépôts :
 
-## Running unit tests
+| | Dépôt | Rôle |
+|---|---|---|
+| **Front-end** | ce dépôt | Application Angular |
+| **API** | [GestionInterventionApi](https://github.com/soultaka19/GestionInterventionApi) | API .NET, base de données, temps réel |
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Pile technique
 
-```bash
-ng test
-```
+**Front-end** — `Angular` · `TypeScript` · `PrimeNG` · `Tailwind CSS` · `RxJS` · `SignalR` (client) · `Leaflet` · `Chart.js`
 
-## Running end-to-end tests
+**API** — `.NET` · `C#` · `Entity Framework Core` · `PostgreSQL` (`Npgsql`) · `SignalR` · `JWT` · `AutoMapper` · `FluentValidation` · `Serilog` · `OpenAPI / Scalar` · `Docker`
 
-For end-to-end (e2e) testing, run:
+La base de données a été migrée de SQL Server vers PostgreSQL en cours de projet.
+
+## Lancer en local
 
 ```bash
-ng e2e
+npm install
+npm start
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+L'application démarre sur `http://localhost:4200` et attend l'API sur le port configuré dans `src/environments/`.
 
-## Additional Resources
+## Documentation
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- **[documentation.md](documentation.md)** : le fonctionnel et les décisions de conception.
+- **[frontend-architecture.md](frontend-architecture.md)** : la structure du front-end.
+- **[Documentation-Api.md](Documentation-Api.md)** : les points d'entrée de l'API.
+
+---
+
+Souleymane Diallo · [soultaka.com](https://soultaka.com) · [linkedin.com/in/souleyman-dev](https://linkedin.com/in/souleyman-dev)
